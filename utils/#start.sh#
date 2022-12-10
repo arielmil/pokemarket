@@ -1,0 +1,5 @@
+apt-get update
+apt-get install python3-distutils -y
+
+python3 disutils get-pip.py
+pip install Cmake psycopg2-binary Flask>=2.0.z
