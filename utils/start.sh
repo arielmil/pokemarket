@@ -8,7 +8,7 @@ source env/bin/activate
 
 python3 disutils get-pip.py
 pip install --upgrade pip
-pip install Cmake psycopg2-binary Flask>=2.0.2 setuptools_rust cryptography pathlib
+pip install Cmake psycopg2-binary Flask>=2.0.2 Flask-Session setuptools_rust cryptography pathlib
 
 export FLASK_APP=base.py
 

@@ -24,9 +24,11 @@ CREATE TABLE pokemarket.pokemon (
 CREATE TABLE pokemarket.venda (
     id SERIAL PRIMARY KEY,
     vendedor_id integer REFERENCES pokemarket.usuario(id) NOT NULL,
-    comprador_id integer REFERENCES pokemarket.usuario(id) NOT NULL,
-    pokemon_id integer REFERENCES pokemarket.pokemons(id) NOT NULL,
+    comprador_id integer REFERENCES pokemarket.usuario(id),
+    pokemon_id integer REFERENCES pokemarket.pokemon(id) NOT NULL,
     preco integer NOT NULL
+    
+    constraint uq_venda UNIQUE(vendedor_id, pokemon_id)
 );
 
 COPY pokemarket.pokemon(
