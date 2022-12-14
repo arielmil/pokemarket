@@ -182,3 +182,11 @@ class usuario:
     #Função necessária para o flask-login
     def get_id(self):
         return self.id
+    
+    def bestowAdminPriviledges(self):
+        try:
+            cur.execute("""UPDATE pokemarket.usuario SET tipo = 'admin' WHERE id = %s""",(self.id))
+            conn.commit()
+        except Exception as err:
+            print("Erro em usuario.bestowAdminPriviledges: %s"%err)
+            conn.rollback()
