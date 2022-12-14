@@ -30,9 +30,9 @@ def login():
             login_user(sessionUser)
 
             if current_user.is_authenticated:
-                print("Usuário logado!")
+                print("\n\nUsuário logado!\n\n")
             else:
-                print("\n\n\nE o foda-se pra ca, e o foda-se pra la, e o foda-se pra todo lado iaiao!\n\n\n")
+                print("\n\nErro: Usuário não autenticado.\n\n")
 
             return redirect(url_for('index'))
 
