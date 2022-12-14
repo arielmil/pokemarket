@@ -34,7 +34,7 @@ class usuario:
             cur.execute("""INSERT INTO pokemarket.usuario(nome, email, carteira, senha, tipo, pokemons) VALUES(%s, %s, %s, %s, %s, %s);""",(nome, email, carteira, senha, tipo, pokemons))
             conn.commit()
         except Exception as err:
-            print("Erro: %s."%err)
+            print("Erro em __init__: %s."%err)
             conn.rollback()
     
     def get(userId=None, email=None):
@@ -48,7 +48,7 @@ class usuario:
         try:
             cur.execute(query)
         except Exception as err:
-            print("Erro : %s."%err)
+            print("Erro em get: %s."%err)
         
         userTuple = cur.fetchone()
         
@@ -75,7 +75,7 @@ class usuario:
             cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s, carteira = carteira - 50 WHERE id = %s;""",(pokemon, userId))
             conn.commit()
         except Exception as err:
-            print("Erro: %s."%err)
+            print("Erro em buyRandomPokemon: %s."%err)
             conn.rollback()
 
     #Da 50₪ para um usuário
@@ -84,7 +84,7 @@ class usuario:
             cur.execute("""UPDATE pokemarket.usuario SET carteira = carteira + 50 WHERE id = %s;""",(userId))
             conn.commit()
         except Exception as err:
-            print("Erro: %s."%err)
+            print("Erro em giveMoney: %s."%err)
             conn.rollback()
 
     def getPassword(email):
@@ -95,7 +95,7 @@ class usuario:
             return encrypter.decrypt(str.encode(cur.fetchone()[0])).decode('utf-8')
 
         except Exception as err:
-            print("Erro: %s."%err)
+            print("Erro em getPassword: %s."%err)
             return -1
             
     def auth(email, senha):
@@ -115,7 +115,7 @@ class usuario:
                    WHERE pokemarket.usuario.id = %s""", str(userId))
             
         except Exception as err:
-            print("Erro: %s."%err)
+            print("Erro em listPokemons: %s."%err)
             return -1
 
         return cur.fetchall()
@@ -138,7 +138,7 @@ class usuario:
                 conn.commit()
                 return 0
             except Exception as err:
-                print("Erro: %s"%err)
+                print("Erro em sell: %s"%err)
                 conn.rollback()
 
         return -1
