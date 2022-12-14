@@ -12,5 +12,6 @@ app.config.from_object(__name__)
 Session(app)
 
 login_manager = LoginManager()
+login_manager.init_app(app)
 
 from controller import controller

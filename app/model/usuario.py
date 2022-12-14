@@ -18,7 +18,7 @@ encrypter = Fernet(encryptionKey)
 
 class usuario:
 
-    #Cria um objeto usuario
+    #Cria um objeto usuario. O Objeto só será criado se o usuário existir no banco de dados.
     def __init__(self, email=None, id=None):
         if (email == None):
             query = """SELECT * FROM pokemarket.usuario WHERE id = {ID}"""
@@ -33,7 +33,7 @@ class usuario:
             
             if userTuple == None:
                 raise Exception("Usuário não encontrado.")
-                return -1
+
             else:
                 print(userTuple)
                 self.id = userTuple[0]
@@ -67,7 +67,7 @@ class usuario:
             print("Erro em usuario.createUser: %s."%err)
             conn.rollback()
 
-    #Retorna um dicionário com os dados de um usuário
+    #Retorna um usuario (Objeto) com os dados do usuário (Banco de Dados)
     def get(userId=None, email=None):
         if email == None:
             query = """SELECT * FROM pokemarket.usuario WHERE id = {ID}"""
@@ -84,21 +84,10 @@ class usuario:
         userTuple = cur.fetchone()
         
         if (userTuple != None):
-
-            userDictionary = {
-                "id": userTuple[0],
-                "nome": userTuple[1],
-                "email": userTuple[2],
-                "carteira": userTuple[3],
-                "senha": userTuple[4],
-                "tipo": userTuple[5],
-                "pokemons": userTuple[6]
-            }
-
-            return userDictionary
+            return usuario(id=userTuple[0])
         
         print("Usuário não encontrado.")
-        return -1
+        return None
 
     def buyRandomPokemon(self):
         pokemon = randint(1, 151)
@@ -177,3 +166,19 @@ class usuario:
                 conn.rollback()
 
         return -1
+
+    #Wrapper para auth que pode ser usado com o flask-login
+    def is_authenticated(self):
+        return auth(self.email, self.senha)
+
+    #Função necessária para o flask-login
+    def is_active(self):
+        return True
+    
+    #Função necessária para o flask-login
+    def is_anonymous(self):
+        return False
+
+    #Função necessária para o flask-login
+    def get_id(self):
+        return self.id

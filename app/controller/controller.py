@@ -96,3 +96,7 @@ def bestowUser50Coins(userId):
         return "50₪ fornecidos para o usuário de id %s."%userId
     else:
         return "Usuário inválido."
+
+@login_manager.user_loader
+def load_user(user_id):
+    return usuario.get(user_id)
