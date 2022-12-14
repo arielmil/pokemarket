@@ -59,7 +59,6 @@ class usuario:
                 "nome": userTuple[1],
                 "email": userTuple[2],
                 "carteira": userTuple[3],
-                "senha": userTuple[4],
                 "tipo": userTuple[5],
                 "pokemons": userTuple[6]
             }
