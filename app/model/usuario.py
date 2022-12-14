@@ -89,6 +89,7 @@ class usuario:
         print("Usuário não encontrado.")
         return None
 
+    #Compra um pokemon aleatório por 50₪ e adiciona aos pokemons do usuário
     def buyRandomPokemon(self):
         pokemon = randint(1, 151)
 
@@ -110,6 +111,7 @@ class usuario:
             print("Erro em giveMoney: %s."%err)
             conn.rollback()
 
+    #Retorna a senha do usuário
     def getPassword(email):
         query = """SELECT senha FROM pokemarket.usuario WHERE email = '{EMAIL}'""".format(EMAIL=email)
         
@@ -120,7 +122,8 @@ class usuario:
         except Exception as err:
             print("Erro em usuario.getPassword: %s."%err)
             return -1
-            
+    
+    #Retorna True se a senha estiver correta
     def auth(email, senha):
         passwordDB = usuario.getPassword(email)
         
@@ -128,6 +131,7 @@ class usuario:
             return passwordDB == senha
         return False
 
+    #Retorna um array com os pokemons do usuario
     def listPokemons(self):
 
         #A query abaixo gera um array de um unico elemento (pokemon.id) e checa se este elemento esta contido no array usuario.pokemon. OBS: Cada travessia SQL obtem um dos pokemons de usuario.
@@ -143,6 +147,7 @@ class usuario:
 
         return cur.fetchall()
 
+    #Checa se o usuario possui um pokemon
     def containsPokemon(self, pokemonId):
         pokemons = usuario.listPokemons(self.id)
 
@@ -153,6 +158,7 @@ class usuario:
                 
         return False
 
+    #Coloca um pokemon a venda no mercado
     def sell(self, pokemonId, price):
         id_ = self.id
         if usuario.containsPokemon(id_, pokemonId):

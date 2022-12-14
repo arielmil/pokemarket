@@ -1,10 +1,15 @@
+#Importando as bibliotecas necessárias:
+
 from controller import *
 from model.usuario import usuario
 from pathlib import Path
 from functools import wraps
 from time import sleep
 
+#Configurações de uso com o Flask-Seesion
 sessionUser = None
+
+#Decorators:
 
 def admin_only(f):
     @wraps(f)
@@ -22,6 +27,8 @@ def admin_only(f):
 
         return f(*args, **kwargs)
     return decorated_function
+
+#Rotas para usuario:
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
@@ -96,3 +103,6 @@ def bestowUser50Coins(userId):
 @login_manager.user_loader
 def load_user(user_id):
     return usuario.get(user_id)
+
+
+#Rotas para vendas:
