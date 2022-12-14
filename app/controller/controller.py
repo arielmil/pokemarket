@@ -4,47 +4,49 @@ from pathlib import Path
 from functools import wraps
 from time import sleep
 
+sessionUser = None
+
 def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if (usuario.get(userId=session.get('userId'))['tipo'] != 'admin'):
-            print('\n\nVocê não tem permissão para acessar essa página.\n\n')
-            return redirect(url_for('index'))
+            return current_app.login_manager.unauthorized()
         return f(*args, **kwargs)
-    return decorated_function
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if (session.get("Email")):
-            print("\n\nUsuário Logado!\n\n")
-            print(session)
-            return f(*args, **kwargs)
-        else:
-            print('\n\nVocê precisa estar logado para acessar essa página.\n\n')
-            return redirect(url_for('login'))
     return decorated_function
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
+    global sessionUser
+
     if request.method == 'POST':
         
         if (usuario.auth(request.form['Email'], request.form['Senha'])):
+            userId = usuario.get(email=request.form['Email']).id
+
             session["Email"] = request.form['Email']
-            session["userId"] = usuario.get(email=request.form['Email'])['id']
-            print("\n\nUsuário Logado!\n\n")
-            print(session)
-            print(session.get("Email"))
+            session["userId"] = userId
+            sessionUser = usuario(id=userId)
+
+            login_user(sessionUser)
+
+            if current_user.is_authenticated:
+                print("Usuário logado!")
+            else:
+                print("\n\n\nE o foda-se pra ca, e o foda-se pra la, e o foda-se pra todo lado iaiao!\n\n\n")
+
             return redirect(url_for('index'))
+
         else:
             print("\n\nUsuário não encontrado!\n\n")
-            return redirect(url_for('createUser'))
+            return redirect(url_for('login'))
 
     return render_template('login.html', error=None)
 
 @app.route('/')
 @login_required
 def index():
+    print("\n\nSession!!!\n\n")
+    print(session)
     return 'Bem vindo ao Pokemarket !'
 
 @app.route('/singup', methods = ['GET', 'POST'])
@@ -56,7 +58,7 @@ def createUser():
         Senha = request.form['Senha']
         
         if (usuario.get(email=Email) == -1):
-            usuario(Nome, Email, Senha)
+            usuario.createUser(Nome, Email, Senha)
         
         else:
             print('\n\nUsuário já cadastrado.\n\n')
@@ -68,7 +70,7 @@ def createUser():
 @app.route('/logout')
 @login_required
 def logout():
-    session.clear()
+    logout_user()
     return redirect(url_for('goodbye'))
 
 @app.route('/goodbye')
@@ -78,8 +80,12 @@ def goodbye():
 @app.route('/giveMoney/<userId>')
 @admin_only
 def bestowUser50Coins(userId):
-    if (usuario.get(userId=userId) != None):
+    if (usuario.get(userId) != None):
         usuario.giveMoney(userId)
         return "50₪ fornecidos para o usuário de id %s."%userId
     else:
         return "Usuário inválido."
+
+@login_manager.user_loader
+def load_user(user_id):
+    return usuario.get(user_id)
