@@ -183,6 +183,7 @@ class usuario:
     def get_id(self):
         return self.id
     
+    #Fornece privilégios de administrador para um usuário
     def bestowAdminPriviledges(self):
         try:
             cur.execute("""UPDATE pokemarket.usuario SET tipo = 'admin' WHERE id = %s""",(self.id))
@@ -190,3 +191,5 @@ class usuario:
         except Exception as err:
             print("Erro em usuario.bestowAdminPriviledges: %s"%err)
             conn.rollback()
+            return -1
+        return 0

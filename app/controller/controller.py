@@ -9,8 +9,17 @@ sessionUser = None
 def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if (usuario.get(userId=session.get('userId'))['tipo'] != 'admin'):
+        usuario = usuario.get(userId=session.get('userId'))
+        
+        try:
+            tipo = usuario.tipo
+        except Exception as err:
+            print("Erro em admin_only: %s."%err)
+            tipo = None
+
+        if usuario == None or tipo != 'admin':
             return current_app.login_manager.unauthorized()
+
         return f(*args, **kwargs)
     return decorated_function
 
