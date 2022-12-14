@@ -42,14 +42,9 @@ def login():
 
     return render_template('login.html', error=None)
 
-@login_required
 @app.route('/')
+@login_required
 def index():
-    print("\n\nSession!!!\n\n")
-    print(session)
-    print(session.get('userId'))
-    print(session.get('Email'))
-    print("\n\n")
     return 'Bem vindo ao Pokemarket !'
 
 @app.route('/singup', methods = ['GET', 'POST'])
