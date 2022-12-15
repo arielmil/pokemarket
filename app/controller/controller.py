@@ -1,7 +1,8 @@
 #Importando as bibliotecas necessárias:
 
 from controller import *
-from model.usuario import usuario
+from model.usuario import Usuario
+from model.venda import Venda
 from pathlib import Path
 from functools import wraps
 from time import sleep
@@ -14,7 +15,7 @@ sessionUser = None
 def admin_only(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        usuario = usuario.get(userId=session.get('userId'))
+        usuario = Usuario.get(userId=session.get('userId'))
         
         try:
             tipo = usuario.tipo
@@ -29,19 +30,18 @@ def admin_only(f):
     return decorated_function
 
 #Rotas para usuario:
-
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
     global sessionUser
 
     if request.method == 'POST':
         
-        if (usuario.auth(request.form['Email'], request.form['Senha'])):
-            userId = usuario.get(email=request.form['Email']).id
+        if (Usuario.auth(request.form['Email'], request.form['Senha'])):
+            userId = Usuario.get(email=request.form['Email']).id
 
             session["Email"] = request.form['Email']
             session["userId"] = userId
-            sessionUser = usuario(id=userId)
+            sessionUser = Usuario(id=userId)
 
             login_user(sessionUser)
 
@@ -71,8 +71,8 @@ def createUser():
         Nome = request.form['Nome']
         Senha = request.form['Senha']
         
-        if (usuario.get(email=Email) == -1):
-            usuario.createUser(Nome, Email, Senha)
+        if (Usuario.get(email=Email) == None):
+            Usuario.createUser(Nome, Email, Senha)
         
         else:
             print('\n\nUsuário já cadastrado.\n\n')
@@ -94,15 +94,15 @@ def goodbye():
 @app.route('/giveMoney/<userId>')
 @admin_only
 def bestowUser50Coins(userId):
-    if (usuario.get(userId) != None):
-        usuario.giveMoney(userId)
+    if (Usuario.get(userId) != None):
+        Usuario.giveMoney(userId)
         return "50₪ fornecidos para o usuário de id %s."%userId
     else:
         return "Usuário inválido."
 
 @login_manager.user_loader
 def load_user(user_id):
-    return usuario.get(user_id)
+    return Usuario.get(user_id)
 
 
 #Rotas para vendas:

@@ -2,6 +2,8 @@ CREATE SCHEMA pokemarket;
 
 CREATE TYPE pokemarket.user_type AS ENUM ('admin', 'user');
 
+SET datestyle = "ISO, DMY";
+
 CREATE TABLE pokemarket.usuario (
     id SERIAL PRIMARY KEY,
     nome text NOT NULL,
@@ -26,9 +28,9 @@ CREATE TABLE pokemarket.venda (
     vendedor_id integer REFERENCES pokemarket.usuario(id) NOT NULL,
     comprador_id integer REFERENCES pokemarket.usuario(id),
     pokemon_id integer REFERENCES pokemarket.pokemon(id) NOT NULL,
-    preco integer NOT NULL
-    
-    constraint uq_venda UNIQUE(vendedor_id, pokemon_id)
+    preco integer NOT NULL,
+    data_venda timestamp default NULL,
+    finalizada boolean default FALSE NOT NULL
 );
 
 COPY pokemarket.pokemon(

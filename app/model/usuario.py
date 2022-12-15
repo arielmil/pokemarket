@@ -2,6 +2,7 @@ from psycopg2 import *
 from random import randint
 from pathlib import Path
 from cryptography.fernet import Fernet
+from venda import Venda
 
 #Conecta com a database e gera um cursor para queries
 conn = connect(dbname="pokemarket", user="postgres", password="docker", host="localhost")
@@ -16,9 +17,9 @@ with open(pathToKey, 'rb') as file_object:
 #Gera um objeto para encriptar e desencriptar
 encrypter = Fernet(encryptionKey)
 
-class usuario:
+class Usuario:
 
-    #Cria um objeto usuario. O Objeto só será criado se o usuário existir no banco de dados.
+    #Cria um objeto Usuario. O Objeto só será criado se o usuário existir no banco de dados.
     def __init__(self, email=None, id=None):
         if (email == None):
             query = """SELECT * FROM pokemarket.usuario WHERE id = {ID}"""
@@ -45,7 +46,7 @@ class usuario:
                 self.pokemons = userTuple[6]
 
         except Exception as err:
-            print("Erro em usuario.__init__(): %s"%err)
+            print("Erro em Usuario.__init__(): %s"%err)
 
     #Registra o usuario no banco de dados
     def createUser(nome, email, senha, tipo="user", carteira="1000"):
@@ -64,14 +65,14 @@ class usuario:
             cur.execute("""INSERT INTO pokemarket.usuario(nome, email, carteira, senha, tipo, pokemons) VALUES(%s, %s, %s, %s, %s, %s);""",(nome, email, carteira, senha, tipo, pokemons))
             conn.commit()
         except Exception as err:
-            print("Erro em usuario.createUser: %s."%err)
+            print("Erro em Usuario.createUser: %s."%err)
             conn.rollback()
 
     #Retorna um usuario (Objeto) com os dados do usuário (Banco de Dados)
-    def get(userId=None, email=None):
+    def get(id=None, email=None):
         if email == None:
             query = """SELECT * FROM pokemarket.usuario WHERE id = {ID}"""
-            query = query.format(ID=userId)
+            query = query.format(ID=id)
         else:
             query = """SELECT * FROM pokemarket.usuario WHERE email = '{EMAIL}'"""
             query = query.format(EMAIL=email)
@@ -79,12 +80,12 @@ class usuario:
         try:
             cur.execute(query)
         except Exception as err:
-            print("Erro em usuario.get: %s."%err)
+            print("Erro em Usuario.get: %s."%err)
         
         userTuple = cur.fetchone()
         
         if (userTuple != None):
-            return usuario(id=userTuple[0])
+            return Usuario(id=userTuple[0])
         
         print("Usuário não encontrado.")
         return None
@@ -97,7 +98,7 @@ class usuario:
             cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s, carteira = carteira - 50 WHERE id = %s;""",(pokemon, self.id))
             conn.commit()
         except Exception as err:
-            print("Erro em buyRandomPokemon: %s."%err)
+            print("Erro em Usuario.buyRandomPokemon: %s."%err)
             conn.rollback()
         
         return 0
@@ -120,12 +121,12 @@ class usuario:
             return encrypter.decrypt(str.encode(cur.fetchone()[0])).decode('utf-8')
 
         except Exception as err:
-            print("Erro em usuario.getPassword: %s."%err)
+            print("Erro em Usuario.getPassword: %s."%err)
             return -1
     
     #Retorna True se a senha estiver correta
     def auth(email, senha):
-        passwordDB = usuario.getPassword(email)
+        passwordDB = Usuario.getPassword(email)
         
         if (passwordDB != -1):
             return passwordDB == senha
@@ -142,37 +143,39 @@ class usuario:
                    WHERE pokemarket.usuario.id = %s""", str(self.id))
             
         except Exception as err:
-            print("Erro em usuario.listPokemons: %s."%err)
-            return -1
+            print("Erro em Usuario.listPokemons: %s."%err)
+            return None
 
         return cur.fetchall()
 
     #Checa se o usuario possui um pokemon
     def containsPokemon(self, pokemonId):
-        pokemons = usuario.listPokemons(self.id)
+        pokemons = self.listPokemons()
 
-        if pokemons != -1:
+        if pokemons != None:
             for pokemon in pokemons:
                 if pokemon[0] == pokemonId:
                     return True
                 
         return False
 
-    #Coloca um pokemon a venda no mercado
+    #Coloca um pokemon a venda no mercado e retorna um objeto Venda (ou -1 em caso de erro)
     def sell(self, pokemonId, price):
-        id_ = self.id
-        if usuario.containsPokemon(id_, pokemonId):
+        userId = self.id
+        contains = Usuario.containsPokemon(self, pokemonId)
+
+        if contains:
+            vendaId = Venda.createVenda(userId, pokemonId, price)
             
-            try:
-                cur.execute("""INSERT INTO pokemarket.venda(vendedor_id, pokemon_id, preco) VALUES(%s, %s, %s)""",(id_, pokemonId, price))
-                conn.commit()
-                return 0
-            except Exception as err:
-                print("Erro em usuario.sell: %s"%err)
-                conn.rollback()
+            if vendaId != -1:
+                venda = Venda(vendaId)
+            else:
+                raise Exception("Erro ao criar venda.")
+        else:
+            print("\n\nUsuário não possui o pokemon especificado.\n\n")
 
-        return -1
-
+        return venda if contains else -1
+            
     #Wrapper para auth que pode ser usado com o flask-login
     def is_authenticated(self):
         return auth(self.email, self.senha)
@@ -195,7 +198,33 @@ class usuario:
             cur.execute("""UPDATE pokemarket.usuario SET tipo = 'admin' WHERE id = %s""",(self.id))
             conn.commit()
         except Exception as err:
-            print("Erro em usuario.bestowAdminPriviledges: %s"%err)
+            print("Erro em Usuario.bestowAdminPriviledges: %s"%err)
             conn.rollback()
             return -1
         return 0
+
+    #Transfere um pokemon de um usuário para o outro para concluir a transação.
+    def transfer(self, pokemonId, otherUserId):
+        if self.containsPokemon(pokemonId):
+
+            try:
+                cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons - %s WHERE id = %s""",(pokemonId, self.id))
+                cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s WHERE id = %s""",(pokemonId, otherUserId))
+                conn.commit()
+            except Exception as err:
+                print("Erro em Usuario.transfer: %s"%err)
+                conn.rollback()
+                return -1
+            return 0
+
+        else:
+           print("Usuário não possui o pokemon especificado.")
+           return -1
+    
+    def getCarteira(self):
+        try:
+            cur.execute("""SELECT carteira FROM pokemarket.usuario WHERE id = {ID}""".format(ID = str(self.id)))
+            return cur.fetchone()[0]
+        except Exception as err:
+            print("Erro em Usuario.getCarteira: %s."%err)
+            return -1
