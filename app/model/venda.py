@@ -69,8 +69,13 @@ class Venda:
 
     #Recebe alguns filtros(a definir), e uma quantidade de itens maxima, e retorna uma lista com as vendas(tuplas) que atendem aos filtros.
     def listVendas():
-        return
-
+        try:
+            cur.execute("""SELECT * FROM pokemarket.venda""")
+            return cur.fetchall()
+        except Exception as err:
+            print("Erro em venda.listVendas: %s."%err)
+            return None
+    
     #Altera a coluna "finalizada" para True no Banco de Dados.
     def finishSale(self):
         try:

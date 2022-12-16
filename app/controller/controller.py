@@ -2,8 +2,6 @@
 
 from controller import *
 from model.usuario import Usuario
-from model.venda import Venda
-from pathlib import Path
 from functools import wraps
 from time import sleep
 
@@ -106,3 +104,8 @@ def load_user(user_id):
 
 
 #Rotas para vendas:
+@app.route('/meusPokemons', methods = ['GET', 'POST'])
+@login_required
+def myPokemons():
+    pokemonList = sessionUser.listPokemons()
+    return render_template('myPokemons.html', pokemonList=pokemonList)

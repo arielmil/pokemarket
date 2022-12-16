@@ -64,6 +64,7 @@ class Usuario:
         try:
             cur.execute("""INSERT INTO pokemarket.usuario(nome, email, carteira, senha, tipo, pokemons) VALUES(%s, %s, %s, %s, %s, %s);""",(nome, email, carteira, senha, tipo, pokemons))
             conn.commit()
+            
         except Exception as err:
             print("Erro em Usuario.createUser: %s."%err)
             conn.rollback()
@@ -79,6 +80,7 @@ class Usuario:
 
         try:
             cur.execute(query)
+
         except Exception as err:
             print("Erro em Usuario.get: %s."%err)
         
@@ -105,9 +107,11 @@ class Usuario:
 
     #Da 50₪ para um usuário
     def giveMoney(userId):
+
         try:
             cur.execute("""UPDATE pokemarket.usuario SET carteira = carteira + 50 WHERE id = %s;""",(userId))
             conn.commit()
+
         except Exception as err:
             print("Erro em giveMoney: %s."%err)
             conn.rollback()
@@ -162,19 +166,19 @@ class Usuario:
     #Coloca um pokemon a venda no mercado e retorna um objeto Venda (ou -1 em caso de erro)
     def sell(self, pokemonId, price):
         userId = self.id
-        contains = Usuario.containsPokemon(self, pokemonId)
-
-        if contains:
+        
+        if self.removePokemon(pokemonId) != -1:
             vendaId = Venda.createVenda(userId, pokemonId, price)
             
             if vendaId != -1:
                 venda = Venda(vendaId)
             else:
                 raise Exception("Erro ao criar venda.")
-        else:
-            print("\n\nUsuário não possui o pokemon especificado.\n\n")
+            
+            return venda if venda != None else -1
 
-        return venda if contains else -1
+        else:
+            raise Exception("Erro ao remover pokemon do usuario.")
             
     #Wrapper para auth que pode ser usado com o flask-login
     def is_authenticated(self):
@@ -194,37 +198,63 @@ class Usuario:
     
     #Fornece privilégios de administrador para um usuário
     def bestowAdminPriviledges(self):
+
         try:
             cur.execute("""UPDATE pokemarket.usuario SET tipo = 'admin' WHERE id = %s""",(self.id))
             conn.commit()
+
         except Exception as err:
             print("Erro em Usuario.bestowAdminPriviledges: %s"%err)
             conn.rollback()
             return -1
         return 0
 
-    #Transfere um pokemon de um usuário para o outro para concluir a transação.
-    def transfer(self, pokemonId, otherUserId):
+    #Transfere um pokemon do vendedor para o comprador, e transfere a quantia de dinheiro especificada do comprador para o vendedor.
+    def transferPokemonAndMoney(self, pokemonId, compradorId):
         if self.containsPokemon(pokemonId):
 
             try:
                 cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons - %s WHERE id = %s""",(pokemonId, self.id))
-                cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s WHERE id = %s""",(pokemonId, otherUserId))
+                cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s WHERE id = %s""",(pokemonId, compradorId))
+                cur.execute("""UPDATE pokemarket.usuario SET carteira = carteira - %s WHERE id = %s""",(Venda.getPrice(pokemonId), compradorId))
+                cur.execute("""UPDATE pokemarket.usuario SET carteira = carteira + %s WHERE id = %s""",(Venda.getPrice(pokemonId), self.id))
                 conn.commit()
+
             except Exception as err:
                 print("Erro em Usuario.transfer: %s"%err)
                 conn.rollback()
                 return -1
+
             return 0
 
         else:
            print("Usuário não possui o pokemon especificado.")
            return -1
     
+    #Retorna a carteira (Quantidade de dinheiro) do usuário
     def getCarteira(self):
         try:
             cur.execute("""SELECT carteira FROM pokemarket.usuario WHERE id = {ID}""".format(ID = str(self.id)))
             return cur.fetchone()[0]
+
         except Exception as err:
             print("Erro em Usuario.getCarteira: %s."%err)
             return -1
+
+    #Retira um pokemon (identificado por pokemonId) do usuário
+    def removePokemon(self, pokemonId):
+        if self.containsPokemon(pokemonId):
+            try:
+                cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons - %s WHERE id = %s""",(pokemonId, self.id))
+                conn.commit()
+
+            except Exception as err:
+                print("Erro em Usuario.removePokemon: %s"%err)
+                conn.rollback()
+                return -1
+
+            return 0
+
+        else:
+           print("Usuário não possui o pokemon especificado.")
+           return -1
