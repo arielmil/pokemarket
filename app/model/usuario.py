@@ -208,28 +208,6 @@ class Usuario:
             conn.rollback()
             return -1
         return 0
-
-    #Transfere um pokemon do vendedor para o comprador, e transfere a quantia de dinheiro especificada do comprador para o vendedor.
-    def transferPokemonAndMoney(self, pokemonId, compradorId):
-        if self.containsPokemon(pokemonId):
-
-            try:
-                cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons - %s WHERE id = %s""",(pokemonId, self.id))
-                cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s WHERE id = %s""",(pokemonId, compradorId))
-                cur.execute("""UPDATE pokemarket.usuario SET carteira = carteira - %s WHERE id = %s""",(Venda.getPrice(pokemonId), compradorId))
-                cur.execute("""UPDATE pokemarket.usuario SET carteira = carteira + %s WHERE id = %s""",(Venda.getPrice(pokemonId), self.id))
-                conn.commit()
-
-            except Exception as err:
-                print("Erro em Usuario.transfer: %s"%err)
-                conn.rollback()
-                return -1
-
-            return 0
-
-        else:
-           print("Usuário não possui o pokemon especificado.")
-           return -1
     
     #Retorna a carteira (Quantidade de dinheiro) do usuário
     def getCarteira(self):
@@ -245,7 +223,7 @@ class Usuario:
     def removePokemon(self, pokemonId):
         if self.containsPokemon(pokemonId):
             try:
-                cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons - %s WHERE id = %s""",(pokemonId, self.id))
+                cur.execute("""UPDATE pokemarket.usuario SET pokemons = array_remove(pokemons, %s) WHERE id = %s""",(pokemonId, self.id))
                 conn.commit()
 
             except Exception as err:

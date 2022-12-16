@@ -48,7 +48,7 @@ class Venda:
     #Define o comprador da venda no Banco de Dados.
     def setBuyer(self, buyerId):
         try:
-            cur.execute("""UPDATE pokemarket.venda SET comprador_id = {BUYERID} WHERE id = {IDVENDA}""".format(BUYERID = str(buyerId), IDVENDA = str(self.idVenda)))
+            cur.execute("""UPDATE pokemarket.venda SET comprador_id = %s WHERE id = %s""",(buyerId, self.idVenda))
             conn.commit()
         except Exception as err:
             print("Erro em venda.setBuyer: %s."%err)
@@ -59,7 +59,7 @@ class Venda:
     #Altera o preço da venda no Banco de Dados.
     def alterPrice(self):
         try:
-            cur.execute("""UPDATE pokemarket.venda SET preco = {PRECO} WHERE id = {IDVENDA}""".format(PRECO = str(self.preco), IDVENDA = str(self.idVenda)))
+            cur.execute("""UPDATE pokemarket.venda SET preco = %s WHERE id = %s""",(self.preco, self.idVenda))
             conn.commit()
         except Exception as err:
             print("Erro em venda.alterPrice: %s."%err)
@@ -76,10 +76,12 @@ class Venda:
             print("Erro em venda.listVendas: %s."%err)
             return None
     
-    #Altera a coluna "finalizada" para True no Banco de Dados.
+    #Altera a coluna "finalizada" para True no Banco de Dados, e transfere a quantidade de dinheiro do comprador para o vendedor.
     def finishSale(self):
         try:
-            cur.execute("""UPDATE pokemarket.venda SET finalizada = true WHERE idVenda = {IDVENDA}""".format(IDVENDA = str(self.idVenda)))
+            cur.execute("""UPDATE pokemarket.venda SET finalizada = true WHERE idVenda = %s""",(self.idVenda))
+            cur.execute("""UPDATE pokemarket.usuario SET carteira = carteira + %s WHERE id = %s""",(self.preco, self.vendedor_id))
+            cur.execute("""UPDATE pokemarket.usuario SET carteira = carteira - %s WHERE id = %s""",(self.preco, self.comprador_id))
             conn.commit()
         except Exception as err:
             print("Erro em venda.finishSale: %s."%err)

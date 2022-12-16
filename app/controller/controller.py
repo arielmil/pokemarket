@@ -2,6 +2,7 @@
 
 from controller import *
 from model.usuario import Usuario
+from model.venda import Venda
 from functools import wraps
 from time import sleep
 
