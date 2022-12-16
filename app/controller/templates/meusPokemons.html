@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Meus Pokemons</title>
+  </head>
+  <body>
+    <h1>Meus Pokemons</h1>
+    <ul>
+        {% for pokemon in pokemonList %}
+          <form method="post">
+            <p>Numero: {{ pokemon[0] }}, Nome: {{ pokemon[1] }}
+            <input type="text" name="preco" placeholder="Escolha o preço do pokemon" />
+            <input type="hidden" name="pokemonId" value="{{ pokemon[0] }}" />
+            <input type="submit" value="Colocar a venda" />
+          </form>
+        </li>
+        {% endfor %}
+    </ul>
+  </body>
+</html>
+
+<!--Mudar para lista dropdown com todos os pokemons.-->

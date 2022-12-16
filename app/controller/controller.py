@@ -49,7 +49,7 @@ def login():
             else:
                 print("\n\nErro: Usuário não autenticado.\n\n")
 
-            return redirect(url_for('index'))
+            return redirect(url_for('meusPokemons'))
 
         else:
             print("\n\nUsuário não encontrado!\n\n")
@@ -104,9 +104,14 @@ def load_user(user_id):
     return Usuario.get(user_id)
 
 
-#Rotas para vendas:
+#Rotas para vendas: (Falta pegar o id do pokemon para a venda)
 @app.route('/meusPokemons', methods = ['GET', 'POST'])
 @login_required
-def myPokemons():
+def meusPokemons():
     pokemonList = sessionUser.listPokemons()
-    return render_template('myPokemons.html', pokemonList=pokemonList)
+    if request.method == 'POST':
+        preco = request.form['preco']
+        pokemonId = int(request.form['pokemonId'])
+        sessionUser.sell(pokemonId, preco)
+        return redirect(url_for('meusPokemons'))
+    return render_template('meusPokemons.html', pokemonList=pokemonList)

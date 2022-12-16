@@ -2,7 +2,7 @@ from psycopg2 import *
 from random import randint
 from pathlib import Path
 from cryptography.fernet import Fernet
-from venda import Venda
+from model.venda import Venda
 
 #Conecta com a database e gera um cursor para queries
 conn = connect(dbname="pokemarket", user="postgres", password="docker", host="localhost")
@@ -155,7 +155,6 @@ class Usuario:
     #Checa se o usuario possui um pokemon
     def containsPokemon(self, pokemonId):
         pokemons = self.listPokemons()
-
         if pokemons != None:
             for pokemon in pokemons:
                 if pokemon[0] == pokemonId:
@@ -166,7 +165,6 @@ class Usuario:
     #Coloca um pokemon a venda no mercado e retorna um objeto Venda (ou -1 em caso de erro)
     def sell(self, pokemonId, price):
         userId = self.id
-        
         if self.removePokemon(pokemonId) != -1:
             vendaId = Venda.createVenda(userId, pokemonId, price)
             
@@ -234,5 +232,5 @@ class Usuario:
             return 0
 
         else:
-           print("Usuário não possui o pokemon especificado.")
+           print("\n\n\nUsuário não possui o pokemon especificado.\n\n\n")
            return -1
