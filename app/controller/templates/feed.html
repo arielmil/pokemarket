@@ -1,3 +1,26 @@
-{% for oferta in ofertas %}
-<p>{{ oferta }} </p>
-{% endfor %}
+<!--Html que lista todas as vendas.-->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Feed</title>
+  </head>
+  <body>
+    <h1>Feed</h1>
+    <ul>
+        {% for oferta in ofertas %}
+         <form method="post">
+          <li>Nome do Vendedor: {{oferta[1]}}</li>
+            Numero do Pokemon: {{oferta[2]}}
+            <br>Nome do Pokemon: {{oferta[3]}}
+            <br>Preço: {{oferta[4]}}</br>
+            Data da oferta: {{oferta[5]}}
+            <br></br>
+            <input type="hidden" name="vendaId" value={{oferta[0]}} />
+            <input type="submit" value="Comprar" />
+            <br></br>
+         </form>
+
+        {% endfor %}
+    </ul>
+  </body>

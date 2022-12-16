@@ -17,7 +17,7 @@ def admin_only(f):
         usuario = Usuario.get(userId=session.get('userId'))
         
         try:
-            tipo = usuario.tipo
+            tipo = usuario.getTipo
         except Exception as err:
             print("Erro em admin_only: %s."%err)
             tipo = None
@@ -115,3 +115,26 @@ def meusPokemons():
         sessionUser.sell(pokemonId, preco)
         return redirect(url_for('meusPokemons'))
     return render_template('meusPokemons.html', pokemonList=pokemonList)
+
+@app.route('/feed', methods = ['GET', 'POST'])
+@login_required
+def feed():
+    ofertas = Venda.listVendas()
+    if request.method == 'POST':
+
+        venda = Venda(request.form['vendaId'])
+        comprador = Usuario.get(id=session.get('userId'))
+
+        if (comprador.getCarteira() >= venda.preco):
+
+            venda.setBuyer(comprador.id)
+            venda.finishSale()
+        
+            comprador.appendToPokemons(venda.pokemon_id)
+
+        else:
+            raise Exception("Saldo insuficiente.")
+
+        return redirect(url_for('feed'))
+
+    return render_template('feed.html', ofertas=ofertas)

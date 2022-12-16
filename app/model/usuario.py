@@ -46,7 +46,7 @@ class Usuario:
                 self.pokemons = userTuple[6]
 
         except Exception as err:
-            print("Erro em Usuario.__init__(): %s"%err)
+            raise Exception("Erro em Usuario.__init__(): %s"%err)
 
     #Registra o usuario no banco de dados
     def createUser(nome, email, senha, tipo="user", carteira="1000"):
@@ -66,8 +66,8 @@ class Usuario:
             conn.commit()
             
         except Exception as err:
-            print("Erro em Usuario.createUser: %s."%err)
             conn.rollback()
+            raise Exception("Erro em Usuario.createUser: %s."%err)
 
     #Retorna um usuario (Objeto) com os dados do usuário (Banco de Dados)
     def get(id=None, email=None):
@@ -82,7 +82,7 @@ class Usuario:
             cur.execute(query)
 
         except Exception as err:
-            print("Erro em Usuario.get: %s."%err)
+            raise Exception("Erro em Usuario.get: %s."%err)
         
         userTuple = cur.fetchone()
         
@@ -92,6 +92,18 @@ class Usuario:
         print("Usuário não encontrado.")
         return None
 
+    #Coloca o pokemon de id pokemonId na lista de pokemons do usuario no Banco de dados
+    def appendToPokemons(self, pokemonId):
+        try:
+            cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s WHERE id = %s;""",(pokemonId, self.id))
+            conn.commit()
+        except Exception as err:
+            conn.rollback()
+            raise Exception("Erro em Usuario.appendToPokemons: %s."%err)
+
+        self.pokemons.append(pokemonId)
+        return 0
+
     #Compra um pokemon aleatório por 50₪ e adiciona aos pokemons do usuário
     def buyRandomPokemon(self):
         pokemon = randint(1, 151)
@@ -100,9 +112,11 @@ class Usuario:
             cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s, carteira = carteira - 50 WHERE id = %s;""",(pokemon, self.id))
             conn.commit()
         except Exception as err:
-            print("Erro em Usuario.buyRandomPokemon: %s."%err)
             conn.rollback()
+            raise Exception("Erro em Usuario.buyRandomPokemon: %s."%err)
         
+        self.carteira = self.carteira - 50
+        self.pokemons.append(pokemon)
         return 0
 
     #Da 50₪ para um usuário
@@ -113,8 +127,14 @@ class Usuario:
             conn.commit()
 
         except Exception as err:
-            print("Erro em giveMoney: %s."%err)
             conn.rollback()
+            raise Exception("Erro em giveMoney: %s."%err)
+                
+        return 0
+        
+    #Retorna o tipo do usuário
+    def getTipo(self):
+        return self.tipo
 
     #Retorna a senha do usuário
     def getPassword(email):
@@ -125,8 +145,7 @@ class Usuario:
             return encrypter.decrypt(str.encode(cur.fetchone()[0])).decode('utf-8')
 
         except Exception as err:
-            print("Erro em Usuario.getPassword: %s."%err)
-            return -1
+            raise Exception("Erro em Usuario.getPassword: %s."%err)
     
     #Retorna True se a senha estiver correta
     def auth(email, senha):
@@ -147,8 +166,7 @@ class Usuario:
                    WHERE pokemarket.usuario.id = %s""", str(self.id))
             
         except Exception as err:
-            print("Erro em Usuario.listPokemons: %s."%err)
-            return None
+            raise Exception("Erro em Usuario.listPokemons: %s."%err)
 
         return cur.fetchall()
 
@@ -202,9 +220,10 @@ class Usuario:
             conn.commit()
 
         except Exception as err:
-            print("Erro em Usuario.bestowAdminPriviledges: %s"%err)
             conn.rollback()
-            return -1
+            raise Exception("Erro em Usuario.bestowAdminPriviledges:")
+
+        self.tipo = 'admin'
         return 0
     
     #Retorna a carteira (Quantidade de dinheiro) do usuário
@@ -214,8 +233,7 @@ class Usuario:
             return cur.fetchone()[0]
 
         except Exception as err:
-            print("Erro em Usuario.getCarteira: %s."%err)
-            return -1
+            raise Exception("Erro em Usuario.getCarteira: %s."%err)
 
     #Retira um pokemon (identificado por pokemonId) do usuário
     def removePokemon(self, pokemonId):
@@ -225,10 +243,10 @@ class Usuario:
                 conn.commit()
 
             except Exception as err:
-                print("Erro em Usuario.removePokemon: %s"%err)
                 conn.rollback()
-                return -1
+                raise Exception("Erro em Usuario.removePokemon: %s"%err)
 
+            self.pokemons.remove(pokemonId)
             return 0
 
         else:
