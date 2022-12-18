@@ -36,7 +36,7 @@ def login():
     if request.method == 'POST':
         
         if (Usuario.auth(request.form['Email'], request.form['Senha'])):
-            userId = Usuario.get(email=request.form['Email']).id
+            userId = Usuario.get(email=request.form['Email']).get_id()
 
             session["Email"] = request.form['Email']
             session["userId"] = userId
@@ -104,37 +104,29 @@ def load_user(user_id):
     return Usuario.get(user_id)
 
 
-#Rotas para vendas: (Falta pegar o id do pokemon para a venda)
+#Rotas para vendas:
 @app.route('/meusPokemons', methods = ['GET', 'POST'])
 @login_required
 def meusPokemons():
     pokemonList = sessionUser.listPokemons()
+
     if request.method == 'POST':
+
         preco = request.form['preco']
         pokemonId = int(request.form['pokemonId'])
         sessionUser.sell(pokemonId, preco)
         return redirect(url_for('meusPokemons'))
+
     return render_template('meusPokemons.html', pokemonList=pokemonList)
 
 @app.route('/feed', methods = ['GET', 'POST'])
 @login_required
 def feed():
     ofertas = Venda.listVendas()
+
     if request.method == 'POST':
 
-        venda = Venda(request.form['vendaId'])
-        comprador = Usuario.get(id=session.get('userId'))
-
-        if (comprador.getCarteira() >= venda.preco):
-
-            venda.setBuyer(comprador.id)
-            venda.finishSale()
-        
-            comprador.appendToPokemons(venda.pokemon_id)
-
-        else:
-            raise Exception("Saldo insuficiente.")
-
+        sessionUser.buy(request.form['vendaId'])
         return redirect(url_for('feed'))
 
     return render_template('feed.html', ofertas=ofertas)

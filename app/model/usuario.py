@@ -45,8 +45,8 @@ class Usuario:
                 self.tipo = userTuple[5]
                 self.pokemons = userTuple[6]
 
-        except Exception as err:
-            raise Exception("Erro em Usuario.__init__(): %s"%err)
+        except psycop2.Error as err:
+            raise Exception("Erro em Usuario.__init__(): %s"%err.pgerror)
 
     #Registra o usuario no banco de dados
     def createUser(nome, email, senha, tipo="user", carteira="1000"):
@@ -65,9 +65,9 @@ class Usuario:
             cur.execute("""INSERT INTO pokemarket.usuario(nome, email, carteira, senha, tipo, pokemons) VALUES(%s, %s, %s, %s, %s, %s);""",(nome, email, carteira, senha, tipo, pokemons))
             conn.commit()
             
-        except Exception as err:
+        except psycop2.Error as err:
             conn.rollback()
-            raise Exception("Erro em Usuario.createUser: %s."%err)
+            raise Exception("Erro em Usuario.createUser: %s."%err.pgerror)
 
     #Retorna um usuario (Objeto) com os dados do usuário (Banco de Dados)
     def get(id=None, email=None):
@@ -81,8 +81,8 @@ class Usuario:
         try:
             cur.execute(query)
 
-        except Exception as err:
-            raise Exception("Erro em Usuario.get: %s."%err)
+        except psycop2.Error as err:
+            raise Exception("Erro em Usuario.get: %s."%err.pgerror)
         
         userTuple = cur.fetchone()
         
@@ -97,9 +97,9 @@ class Usuario:
         try:
             cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s WHERE id = %s;""",(pokemonId, self.id))
             conn.commit()
-        except Exception as err:
+        except psycop2.Error as err:
             conn.rollback()
-            raise Exception("Erro em Usuario.appendToPokemons: %s."%err)
+            raise Exception("Erro em Usuario.appendToPokemons: %s."%err.pgerror)
 
         self.pokemons.append(pokemonId)
         return 0
@@ -111,9 +111,9 @@ class Usuario:
         try:
             cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s, carteira = carteira - 50 WHERE id = %s;""",(pokemon, self.id))
             conn.commit()
-        except Exception as err:
+        except psycop2.Error as err:
             conn.rollback()
-            raise Exception("Erro em Usuario.buyRandomPokemon: %s."%err)
+            raise Exception("Erro em Usuario.buyRandomPokemon: %s."%err.pgerror)
         
         self.carteira = self.carteira - 50
         self.pokemons.append(pokemon)
@@ -126,9 +126,9 @@ class Usuario:
             cur.execute("""UPDATE pokemarket.usuario SET carteira = carteira + 50 WHERE id = %s;""",(userId))
             conn.commit()
 
-        except Exception as err:
+        except psycop2.Error as err:
             conn.rollback()
-            raise Exception("Erro em giveMoney: %s."%err)
+            raise Exception("Erro em giveMoney: %s."%err.pgerror)
                 
         return 0
         
@@ -144,8 +144,8 @@ class Usuario:
             cur.execute(query)
             return encrypter.decrypt(str.encode(cur.fetchone()[0])).decode('utf-8')
 
-        except Exception as err:
-            raise Exception("Erro em Usuario.getPassword: %s."%err)
+        except psycop2.Error as err:
+            raise Exception("Erro em Usuario.getPassword: %s."%err.pgerror)
     
     #Retorna True se a senha estiver correta
     def auth(email, senha):
@@ -165,8 +165,8 @@ class Usuario:
                    JOIN pokemarket.pokemon ON pokemarket.usuario.pokemons @> ARRAY[pokemarket.pokemon.id]
                    WHERE pokemarket.usuario.id = %s""", str(self.id))
             
-        except Exception as err:
-            raise Exception("Erro em Usuario.listPokemons: %s."%err)
+        except psycop2.Error as err:
+            raise Exception("Erro em Usuario.listPokemons: %s."%err.pgerror)
 
         return cur.fetchall()
 
@@ -195,6 +195,18 @@ class Usuario:
 
         else:
             raise Exception("Erro ao remover pokemon do usuario.")
+    
+    #Compra o pokemon de uma venda
+    def buy(self, vendaId):
+        venda = Venda(vendaId)
+        if venda != None:
+            if self.carteira >= venda.getPreco():
+                venda.setBuyer(self.id)
+                venda.finishSale()
+                self.appendToPokemons(venda.getPokemonId())
+            else:
+                raise Exception("Saldo insuficiente.")
+
             
     #Wrapper para auth que pode ser usado com o flask-login
     def is_authenticated(self):
@@ -219,7 +231,7 @@ class Usuario:
             cur.execute("""UPDATE pokemarket.usuario SET tipo = 'admin' WHERE id = %s""",(self.id))
             conn.commit()
 
-        except Exception as err:
+        except psycop2.Error as err:
             conn.rollback()
             raise Exception("Erro em Usuario.bestowAdminPriviledges:")
 
@@ -232,8 +244,8 @@ class Usuario:
             cur.execute("""SELECT carteira FROM pokemarket.usuario WHERE id = {ID}""".format(ID = str(self.id)))
             return cur.fetchone()[0]
 
-        except Exception as err:
-            raise Exception("Erro em Usuario.getCarteira: %s."%err)
+        except psycop2.Error as err:
+            raise Exception("Erro em Usuario.getCarteira: %s."%err.pgerror)
 
     #Retira um pokemon (identificado por pokemonId) do usuário
     def removePokemon(self, pokemonId):
@@ -242,9 +254,9 @@ class Usuario:
                 cur.execute("""UPDATE pokemarket.usuario SET pokemons = array_remove(pokemons, %s) WHERE id = %s""",(pokemonId, self.id))
                 conn.commit()
 
-            except Exception as err:
+            except psycop2.Error as err:
                 conn.rollback()
-                raise Exception("Erro em Usuario.removePokemon: %s"%err)
+                raise Exception("Erro em Usuario.removePokemon: %s"%err.pgerror)
 
             self.pokemons.remove(pokemonId)
             return 0
@@ -252,3 +264,17 @@ class Usuario:
         else:
            print("\n\n\nUsuário não possui o pokemon especificado.\n\n\n")
            return -1
+    
+    #Deleta um usuário do anco de dados
+    def dropUser(self):
+        try:
+            cur.execute("""DELETE FROM pokemarket.usuario WHERE id = %s""",(self.id))
+            conn.commit()
+
+        except psycop2.Error as err:
+            conn.rollback()
+            raise Exception("Erro em Usuario.dropUser: %s"%err.pgerror)
+
+        return 0
+
+print("oi")
