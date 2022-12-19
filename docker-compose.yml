@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+	pokemarket_database:
+    build:
+    	dockerfile: Dockerfile_Postgresql
+    ports:
+    	- "8000:5000"
+  pokemarket_app:
+    build:
+    	dockerfile: Dockerfile_python
+    ports:
+      - "8000:5432"
