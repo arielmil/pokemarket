@@ -11,4 +11,4 @@ RUN pip install Cmake psycopg2-binary Flask>=2.0.2 Flask-Session Flask-Login set
 ENV FLASK_APP base.py
 
 RUN cd pokemarket/utils/pythonContainerFiles && python3 createCriptoKey.py
-RUN cd pokemarket/app && flask run
+

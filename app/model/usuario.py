@@ -142,7 +142,8 @@ class Usuario:
         
         try:
             cur.execute(query)
-            return encrypter.decrypt(str.encode(cur.fetchone()[0])).decode('utf-8')
+            ret = cur.fetchone()
+            return -1 if ret == None else ret[0]
 
         except Error as err:
             raise Exception("Erro em Usuario.getPassword: %s."%err)
@@ -150,7 +151,8 @@ class Usuario:
     #Retorna True se a senha estiver correta
     def auth(email, senha):
         passwordDB = Usuario.getPassword(email)
-        
+        passwordDB = encrypter.decrypt(passwordDB.encode("utf-8")).decode("utf-8")
+
         if (passwordDB != -1):
             return passwordDB == senha
         return False

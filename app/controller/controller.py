@@ -33,7 +33,9 @@ def login():
 
     if request.method == 'POST':
         
-        if (Usuario.auth(request.form['Email'], request.form['Senha'])):
+        auth = Usuario.auth(request.form['Email'], request.form['Senha'])
+        
+        if (auth):
             userId = Usuario.get(email=request.form['Email']).get_id()
 
             session["Email"] = request.form['Email']
