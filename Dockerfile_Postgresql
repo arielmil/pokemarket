@@ -1,0 +1,7 @@
+FROM postgres
+ENV POSTGRES_PASSWORD docker
+ENV POSTGRES_DB pokemarket
+RUN mkdir utils
+COPY utils/postgresqlContainerFiles/pokemonScrapper.py ./utils
+RUN python ./utils/pokemonScrapper.py
+COPY utils/start.sql /docker-entrypoint-initdb.d/

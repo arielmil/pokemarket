@@ -1,0 +1,19 @@
+FROM python
+ENV FLASK_APP base.py
+RUN apt-get update
+RUN apt-get install python3-distutils -y
+
+RUN git clone https://github.com/arielmil/pokemarket.git
+
+RUN cd /pokemarket/app/controller
+
+RUN python3 -m venv env
+RUN source env/bin/activate
+
+RUN python3 disutils get-pip.py
+RUN pip install --upgrade pip
+RUN pip install Cmake psycopg2-binary Flask>=2.0.2 Flask-Session Flask-Login setuptools_rust cryptography pathlib
+
+ENV FLASK_APP base.py
+
+RUN python3 utils/createCritoKey.py
