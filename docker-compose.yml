@@ -9,7 +9,7 @@ services:
   
   pokemarket_app:
     depends_on:
-      - database
+      - pokemarket_database
     build:
       dockerfile: Dockerfile_python
     ports:
