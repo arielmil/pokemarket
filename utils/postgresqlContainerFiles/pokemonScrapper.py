@@ -13,42 +13,43 @@ for num in range(1, 152):
     ids.append(num)
     pokemons.append(copy.deepcopy(pokemon))
 
-#Query para obter os dados de Pokemons
-i = 0
-for id_ in ids:
-    pokemon_ = pb.pokemon(id_)
-
-    number = pokemon_.id
-    name = pokemon_.name.title()
-
-    abilities_ = pokemon_.abilities
-
-    #Lista com as abilidades do Pokemon
-    abilities = []
-
-    types_ = pokemon_.types
-
-    #Lista com os tipos do Pokemon
-    types = []
-
-    print("Copiando Pokemon %s: %s..."%(name, number))
-    
-    for ability in abilities_:
-        abilities.append(ability.ability.name.title())
-
-    for type_ in types_:
-        types.append(type_.type.name.title())
-
-    pokemons[i]["number"] = number
-    pokemons[i]["name"] = name
-    pokemons[i]["abilities"] = abilities
-    pokemons[i]["types"] = types
-    
-    i = i + 1
 
 exists = os.path.isfile("pokemonlist.csv")
-
 if not exists:
+    
+    #Query para obter os dados de Pokemons
+    i = 0
+    for id_ in ids:
+        pokemon_ = pb.pokemon(id_)
+
+        number = pokemon_.id
+        name = pokemon_.name.title()
+
+        abilities_ = pokemon_.abilities
+
+        #Lista com as abilidades do Pokemon
+        abilities = []
+
+        types_ = pokemon_.types
+
+        #Lista com os tipos do Pokemon
+        types = []
+
+        print("Copiando Pokemon %s: %s..."%(name, number))
+        
+        for ability in abilities_:
+            abilities.append(ability.ability.name.title())
+
+        for type_ in types_:
+            types.append(type_.type.name.title())
+
+        pokemons[i]["number"] = number
+        pokemons[i]["name"] = name
+        pokemons[i]["abilities"] = abilities
+        pokemons[i]["types"] = types
+        
+        i = i + 1
+
     with open("pokemonlist.csv", "w") as writer:
         writer.write("id,nome,tipo,abilidades\n")
         for pokemon in pokemons:
