@@ -1,15 +1,15 @@
 version: "1.0"
 services:
-  pokemarket_database:
+  database:
     build:
       dockerfile: Dockerfile_Postgresql
     ports:
       - "5432:5432"
   
   pokemarket_app:
+    depends_on:
+      - database
     build:
       dockerfile: Dockerfile_python
-    links:
-      - pokemarket_database
     ports:
       - "8000:5000"
