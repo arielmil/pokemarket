@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile_Postgresql
     ports:
       - "5432:5432"
+    restart: always
   
   pokemarket_app:
     depends_on:
@@ -12,4 +13,5 @@ services:
     build:
       dockerfile: Dockerfile_python
     ports:
-      - "8000:5000"
+      - "5000:5000"
+    restart: always

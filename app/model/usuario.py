@@ -5,7 +5,7 @@ from cryptography.fernet import Fernet
 from model.venda import Venda
 
 #Conecta com a database e gera um cursor para queries
-conn = connect(dbname="pokemarket", user="postgres", password="docker", host="database")
+conn = connect(dbname="pokemarket", user="postgres", password="docker", host="database", port= "dababase:5432")
 cur = conn.cursor()
 
 #Pega o hash para encriptagem e desencriptagem
