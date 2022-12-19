@@ -1,7 +1,7 @@
 from psycopg2 import *
 from datetime import datetime
 
-conn = connect(dbname="pokemarket", user="postgres", password="docker", host="db")
+conn = connect(dbname="pokemarket", user="postgres", password="docker", host="localhost")
 cur = conn.cursor()
 
 class Venda:
