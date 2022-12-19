@@ -151,9 +151,8 @@ class Usuario:
     #Retorna True se a senha estiver correta
     def auth(email, senha):
         passwordDB = Usuario.getPassword(email)
-        passwordDB = encrypter.decrypt(passwordDB.encode("utf-8")).decode("utf-8")
-
         if (passwordDB != -1):
+            passwordDB = encrypter.decrypt(passwordDB.encode("utf-8")).decode("utf-8")
             return passwordDB == senha
         return False
 
