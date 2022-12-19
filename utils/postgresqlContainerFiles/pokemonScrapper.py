@@ -1,3 +1,4 @@
+import os
 import pokebase as pb
 import copy
 
@@ -45,34 +46,36 @@ for id_ in ids:
     
     i = i + 1
 
+exists = os.path.isfile("pokemonlist.csv")
 
-with open("pokemonlist.csv", "w") as writer:
-    writer.write("id,nome,tipo,abilidades\n")
-    for pokemon in pokemons:
+if not exists:
+    with open("pokemonlist.csv", "w") as writer:
+        writer.write("id,nome,tipo,abilidades\n")
+        for pokemon in pokemons:
 
-        tipo = ""
-        ultima_pos = len(pokemon["types"]) - 1
-        i = 0
-        
-        for tipo_ in pokemon["types"]:
-            if (i == ultima_pos):
-                tipo = tipo + str(tipo_)
-            else:
-                tipo = tipo + str(tipo_) + ","
+            tipo = ""
+            ultima_pos = len(pokemon["types"]) - 1
+            i = 0
+            
+            for tipo_ in pokemon["types"]:
+                if (i == ultima_pos):
+                    tipo = tipo + str(tipo_)
+                else:
+                    tipo = tipo + str(tipo_) + ","
 
-            i = i + 1
+                i = i + 1
 
-        abilidades = ""
-        ultima_pos = len(pokemon["abilities"]) - 1
-        i = 0
+            abilidades = ""
+            ultima_pos = len(pokemon["abilities"]) - 1
+            i = 0
 
-        for abilidade in pokemon["abilities"]:
-            if (i == ultima_pos):
-                abilidades = abilidades + str(abilidade)
-            else:
-                abilidades = abilidades + str(abilidade) + ","
+            for abilidade in pokemon["abilities"]:
+                if (i == ultima_pos):
+                    abilidades = abilidades + str(abilidade)
+                else:
+                    abilidades = abilidades + str(abilidade) + ","
 
-            i = i + 1
+                i = i + 1
 
-        string = '{0},{1},"{{{2}}}","{{{3}}}"\n'
-        writer.write(string.format(str(pokemon["number"]), pokemon["name"], tipo, abilidades))
+            string = '{0},{1},"{{{2}}}","{{{3}}}"\n'
+            writer.write(string.format(str(pokemon["number"]), pokemon["name"], tipo, abilidades))

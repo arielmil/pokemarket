@@ -6,4 +6,4 @@ python3 createCriptoKey.py
 
 cd ../../app
 
-flask run
+flask run --host=0.0.0.0
