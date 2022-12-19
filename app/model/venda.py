@@ -26,8 +26,8 @@ class Venda:
                 self.data = vendaTuple[5]
                 self.finalizada = vendaTuple[6]
 
-        except psycopg2.Error as err:
-            raise Exception("Erro em venda.__init__(): %s"%err.pgerror)
+        except Error as err:
+            raise Exception("Erro em venda.__init__(): %s"%err)
 
     #Registra a venda no Banco de Dados e retorna o seu id.
     def createVenda(vendedorId, pokemonId, preco):
@@ -38,9 +38,9 @@ class Venda:
             cur.execute("""INSERT INTO pokemarket.venda(vendedor_id, pokemon_id, preco, data_venda) VALUES(%s, %s, %s, %s);""",(vendedorId, pokemonId, preco, dateString))
             conn.commit()
 
-        except psycopg2.error as err:
+        except Error as err:
             conn.rollback()
-            raise Exception("Erro em venda.createVenda: %s."%err.pgerror)
+            raise Exception("Erro em venda.createVenda: %s."%err)
 
         cur.execute("""SELECT id FROM pokemarket.venda WHERE vendedor_id = %s AND data_venda = %s;""",(vendedorId, dateString))
         return cur.fetchone()[0]
@@ -51,9 +51,9 @@ class Venda:
             cur.execute("""UPDATE pokemarket.venda SET comprador_id = %s WHERE id = %s""",(buyerId, self.id))
             conn.commit()
 
-        except psycopg2.error as err:
+        except Error as err:
             conn.rollback()
-            raise Exception("Erro em venda.setBuyer: %s."%err.pgerror)
+            raise Exception("Erro em venda.setBuyer: %s."%err)
 
         self.comprador_id = buyerId
         return 0
@@ -63,9 +63,9 @@ class Venda:
         try:
             cur.execute("""UPDATE pokemarket.venda SET preco = %s WHERE id = %s""",(price, self.id))
             conn.commit()
-        except psycopg2.error as err:
+        except Error as err:
             conn.rollback()
-            raise Exception("Erro em venda.alterPrice: %s."%err.pgerror)
+            raise Exception("Erro em venda.alterPrice: %s."%err)
         
         self.preco = price
         return 0
@@ -91,8 +91,8 @@ class Venda:
             cur.execute(query)
             return cur.fetchall()
             
-        except psycopg2.error as err:
-            raise Exception("Erro em venda.listVendas: %s."%err.pgerror)
+        except Error as err:
+            raise Exception("Erro em venda.listVendas: %s."%err)
                 
     #Altera a coluna "finalizada" para True no Banco de Dados, e transfere a quantidade de dinheiro do comprador para o vendedor.
     def finishSale(self):
@@ -109,8 +109,8 @@ class Venda:
 
             conn.commit()
 
-        except psycopg2.error as err:
-            print("Erro em venda.finishSale: %s."%err.pgerror)
+        except Error as err:
+            print("Erro em venda.finishSale: %s."%err)
             conn.rollback()
             raise Exception ("Erro ao finalizar venda.")
 
@@ -126,7 +126,7 @@ class Venda:
         try:
             cur.execute("""DELETE FROM pokemarket.venda WHERE id = %s""",(self.id,))
             conn.commit()
-        except psycopg2.error as err:
+        except Error as err:
             conn.rollback()
-            raise Exception("Erro em venda.dropVenda: %s."%err.pgerror)
+            raise Exception("Erro em venda.dropVenda: %s."%err)
         return 0

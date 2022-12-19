@@ -45,8 +45,8 @@ class Usuario:
                 self.tipo = userTuple[5]
                 self.pokemons = userTuple[6]
 
-        except psycop2.Error as err:
-            raise Exception("Erro em Usuario.__init__(): %s"%err.pgerror)
+        except Error as err:
+            raise Exception("Erro em Usuario.__init__(): %s"%err)
 
     #Registra o usuario no banco de dados
     def createUser(nome, email, senha, tipo="user", carteira="1000"):
@@ -65,9 +65,9 @@ class Usuario:
             cur.execute("""INSERT INTO pokemarket.usuario(nome, email, carteira, senha, tipo, pokemons) VALUES(%s, %s, %s, %s, %s, %s);""",(nome, email, carteira, senha, tipo, pokemons))
             conn.commit()
             
-        except psycop2.Error as err:
+        except Error as err:
             conn.rollback()
-            raise Exception("Erro em Usuario.createUser: %s."%err.pgerror)
+            raise Exception("Erro em Usuario.createUser: %s."%err)
 
     #Retorna um usuario (Objeto) com os dados do usuário (Banco de Dados)
     def get(id=None, email=None):
@@ -81,8 +81,8 @@ class Usuario:
         try:
             cur.execute(query)
 
-        except psycop2.Error as err:
-            raise Exception("Erro em Usuario.get: %s."%err.pgerror)
+        except Error as err:
+            raise Exception("Erro em Usuario.get: %s."%err)
         
         userTuple = cur.fetchone()
         
@@ -97,9 +97,9 @@ class Usuario:
         try:
             cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s WHERE id = %s;""",(pokemonId, self.id))
             conn.commit()
-        except psycop2.Error as err:
+        except Error as err:
             conn.rollback()
-            raise Exception("Erro em Usuario.appendToPokemons: %s."%err.pgerror)
+            raise Exception("Erro em Usuario.appendToPokemons: %s."%err)
 
         self.pokemons.append(pokemonId)
         return 0
@@ -111,9 +111,9 @@ class Usuario:
         try:
             cur.execute("""UPDATE pokemarket.usuario SET pokemons = pokemons || %s, carteira = carteira - 50 WHERE id = %s;""",(pokemon, self.id))
             conn.commit()
-        except psycop2.Error as err:
+        except Error as err:
             conn.rollback()
-            raise Exception("Erro em Usuario.buyRandomPokemon: %s."%err.pgerror)
+            raise Exception("Erro em Usuario.buyRandomPokemon: %s."%err)
         
         self.carteira = self.carteira - 50
         self.pokemons.append(pokemon)
@@ -126,9 +126,9 @@ class Usuario:
             cur.execute("""UPDATE pokemarket.usuario SET carteira = carteira + 50 WHERE id = %s;""",(userId))
             conn.commit()
 
-        except psycop2.Error as err:
+        except Error as err:
             conn.rollback()
-            raise Exception("Erro em giveMoney: %s."%err.pgerror)
+            raise Exception("Erro em giveMoney: %s."%err)
                 
         return 0
         
@@ -144,8 +144,8 @@ class Usuario:
             cur.execute(query)
             return encrypter.decrypt(str.encode(cur.fetchone()[0])).decode('utf-8')
 
-        except psycop2.Error as err:
-            raise Exception("Erro em Usuario.getPassword: %s."%err.pgerror)
+        except Error as err:
+            raise Exception("Erro em Usuario.getPassword: %s."%err)
     
     #Retorna True se a senha estiver correta
     def auth(email, senha):
@@ -160,13 +160,15 @@ class Usuario:
 
         #A query abaixo gera um array de um unico elemento (pokemon.id) e checa se este elemento esta contido no array usuario.pokemon. OBS: Cada travessia SQL obtem um dos pokemons de usuario.
         try:
-            cur.execute("""SELECT pokemarket.pokemon.id, pokemarket.pokemon.nome
+            query = """SELECT pokemarket.pokemon.id, pokemarket.pokemon.nome
                    FROM pokemarket.usuario
                    JOIN pokemarket.pokemon ON pokemarket.usuario.pokemons @> ARRAY[pokemarket.pokemon.id]
-                   WHERE pokemarket.usuario.id = %s""", str(self.id))
-            
-        except psycop2.Error as err:
-            raise Exception("Erro em Usuario.listPokemons: %s."%err.pgerror)
+                   WHERE pokemarket.usuario.id = {ID}""".format(ID=self.id)
+            cur.execute(query)
+            conn.commit()
+        except Error as err:
+            print("errooooooooooo")
+            raise Exception("Erro em Usuario.listPokemons: %s."%err)
 
         return cur.fetchall()
 
@@ -231,7 +233,7 @@ class Usuario:
             cur.execute("""UPDATE pokemarket.usuario SET tipo = 'admin' WHERE id = %s""",(self.id))
             conn.commit()
 
-        except psycop2.Error as err:
+        except Error as err:
             conn.rollback()
             raise Exception("Erro em Usuario.bestowAdminPriviledges:")
 
@@ -244,8 +246,8 @@ class Usuario:
             cur.execute("""SELECT carteira FROM pokemarket.usuario WHERE id = {ID}""".format(ID = str(self.id)))
             return cur.fetchone()[0]
 
-        except psycop2.Error as err:
-            raise Exception("Erro em Usuario.getCarteira: %s."%err.pgerror)
+        except Error as err:
+            raise Exception("Erro em Usuario.getCarteira: %s."%err)
 
     #Retira um pokemon (identificado por pokemonId) do usuário
     def removePokemon(self, pokemonId):
@@ -254,9 +256,9 @@ class Usuario:
                 cur.execute("""UPDATE pokemarket.usuario SET pokemons = array_remove(pokemons, %s) WHERE id = %s""",(pokemonId, self.id))
                 conn.commit()
 
-            except psycop2.Error as err:
+            except Error as err:
                 conn.rollback()
-                raise Exception("Erro em Usuario.removePokemon: %s"%err.pgerror)
+                raise Exception("Erro em Usuario.removePokemon: %s"%err)
 
             self.pokemons.remove(pokemonId)
             return 0
@@ -271,10 +273,8 @@ class Usuario:
             cur.execute("""DELETE FROM pokemarket.usuario WHERE id = %s""",(self.id))
             conn.commit()
 
-        except psycop2.Error as err:
+        except Error as err:
             conn.rollback()
-            raise Exception("Erro em Usuario.dropUser: %s"%err.pgerror)
+            raise Exception("Erro em Usuario.dropUser: %s"%err)
 
         return 0
-
-print("oi")

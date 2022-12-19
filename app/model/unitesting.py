@@ -2,25 +2,34 @@ from unittest import *
 from psycopg2 import *
 from pathlib import Path
 from cryptography.fernet import Fernet
-from model.usuario import Usuario
-from model.venda import Venda
-from random import randint
+from usuario import Usuario
+from venda import Venda
 
 #Guarda os 10 usuarios de teste
 Usuarios = []
+cur = None
 
 #Pega o hash para encriptagem e desencriptagem
-pathToKey = str(Path(__file__).parents[1]) + '/utils/.key.bin'
+pathToKey = str(Path(__file__).parents[2]) + '/utils/.key.bin'
 with open(pathToKey, 'rb') as file_object:
     for line in file_object:
         encryptionKey = line
 
 
-#Cria 11 usuarios para fins de testes
+#Cria 10 usuarios para fins de testes
 def criaUsuariosTeste():
     global Usuarios
+    cur = conn = connect(dbname="pokemarket", user="postgres", password="docker", host="localhost").cursor()
 
-    for number in range(1, 12):
+    #deleta os usuarios dos testes (falhos) anteriores
+    try:
+        print("\n\nDeletando usuarios teste anteriores...\n\n")
+        conn = connect(dbname="pokemarket", user="postgres", password="docker", host="localhost")
+        conn.cursor().execute("DELETE FROM pokemarket.usuario WHERE email LIKE 'teste%'")
+        conn.commit()
+    except Error as err:
+        raise Exception("Erro em criaUsuariosTeste(): %s"%err)
+    for number in range(1, 11):
         nome = "Teste{number}".format(number=number)
         email = "teste{number}@teste.com".format(number=number)
         senha = "12345"
@@ -73,7 +82,7 @@ class Tester(TestCase):
         
     #Testes de Usuário:
 
-    """
+    
     #Teste de criação de usuário
     def testCreateUser(self):
         print("\n\nTestando criação de usuário...\n\n")
@@ -214,7 +223,7 @@ class Tester(TestCase):
             if (usuario.getCarteira() == carteira):
                 self.assertEqual(False, True)
         
-        self.assertEqual(True, True)"""
+        self.assertEqual(True, True)
 
 if __name__ == '__main__':
     criaUsuariosTeste()
