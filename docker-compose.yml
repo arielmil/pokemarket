@@ -9,5 +9,7 @@ services:
   pokemarket_app:
     build:
       dockerfile: Dockerfile_python
+    	links:
+    	  - "db:pokemarket_database"
     ports:
       - "8000:5000"

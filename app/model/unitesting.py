@@ -19,12 +19,12 @@ with open(pathToKey, 'rb') as file_object:
 #Cria 10 usuarios para fins de testes
 def criaUsuariosTeste():
     global Usuarios
-    cur = conn = connect(dbname="pokemarket", user="postgres", password="docker", host="pokemarket_database").cursor()
+    cur = conn = connect(dbname="pokemarket", user="postgres", password="docker", host="db").cursor()
 
     #deleta os usuarios dos testes (falhos) anteriores
     try:
         print("\n\nDeletando usuarios teste anteriores...\n\n")
-        conn = connect(dbname="pokemarket", user="postgres", password="docker", host="pokemarket_database")
+        conn = connect(dbname="pokemarket", user="postgres", password="docker", host="db")
         conn.cursor().execute("DELETE FROM pokemarket.usuario WHERE email LIKE 'teste%'")
         conn.commit()
     except Error as err:
@@ -60,7 +60,7 @@ class Tester(TestCase):
         print("\n\nTestando conexão com o Banco de Dados...\n\n")
 
         try:
-            conn = connect(dbname="pokemarket", user="postgres", password="docker", host="pokemarket_database")
+            conn = connect(dbname="pokemarket", user="postgres", password="docker", host="db")
             self.cur = conn.cursor()
         except psycop2.Error as err:
             print("\n\nErro ao conectar ao banco de dados: %s\n\n"%err.pgerror)
