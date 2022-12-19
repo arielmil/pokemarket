@@ -31,9 +31,10 @@ CREATE TABLE pokemarket.venda (
     preco integer NOT NULL,
     data_venda timestamp default NULL,
     finalizada boolean default FALSE NOT NULL
-    
-    ADD CONSTRAINT check_comprador_diff_vendedor CHECK (venda.comprador_id != venda.vendedor_id)
 );
+
+ALTER TABLE pokemarket.venda
+ADD CONSTRAINT check_comprador_diff_vendedor CHECK (venda.comprador_id != venda.vendedor_id);
 
 COPY pokemarket.pokemon(
 id, 

@@ -30,6 +30,8 @@ for id_ in ids:
     #Lista com os tipos do Pokemon
     types = []
 
+    print("Copiando Pokemon %s: %s..."%(name, number))
+    
     for ability in abilities_:
         abilities.append(ability.ability.name.title())
 
@@ -59,11 +61,11 @@ with open("pokemonlist.csv", "w") as writer:
                 tipo = tipo + str(tipo_) + ","
 
             i = i + 1
-        
+
         abilidades = ""
         ultima_pos = len(pokemon["abilities"]) - 1
         i = 0
-        
+
         for abilidade in pokemon["abilities"]:
             if (i == ultima_pos):
                 abilidades = abilidades + str(abilidade)
@@ -71,6 +73,6 @@ with open("pokemonlist.csv", "w") as writer:
                 abilidades = abilidades + str(abilidade) + ","
 
             i = i + 1
-            
+
         string = '{0},{1},"{{{2}}}","{{{3}}}"\n'
         writer.write(string.format(str(pokemon["number"]), pokemon["name"], tipo, abilidades))

@@ -1,7 +1,13 @@
 FROM postgres
 ENV POSTGRES_PASSWORD docker
 ENV POSTGRES_DB pokemarket
+
 RUN mkdir utils
 COPY utils/postgresqlContainerFiles/pokemonScrapper.py ./utils
-RUN python ./utils/pokemonScrapper.py
-COPY utils/start.sql /docker-entrypoint-initdb.d/
+
+RUN apt-get update && apt-get install python3-pip -y
+RUN pip install --upgrade pip
+RUN pip install pokebase
+
+RUN python3 ./utils/pokemonScrapper.py
+COPY utils/postgresqlContainerFiles/start.sql /docker-entrypoint-initdb.d/
