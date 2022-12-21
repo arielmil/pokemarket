@@ -20,8 +20,4 @@ fi
 		
 docker compose build --no-cache
 
-docker compose up -d
-
-databaseContainerId=$(docker ps -aqf "name=pokemarket_database")
-
-docker exec $databaseContainerId ./utils/startCron.sh
+docker compose up
