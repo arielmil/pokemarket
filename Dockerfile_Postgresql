@@ -5,9 +5,13 @@ ENV POSTGRES_DB pokemarket
 RUN mkdir utils
 COPY utils/postgresqlContainerFiles/pokemonScrapper.py ./utils
 
-RUN apt-get update && apt-get install python3-pip -y
-RUN pip install --upgrade pip
-RUN pip install pokebase
+RUN apt-get update && apt-get install python3-pip cron nano -y && pip install --upgrade pip pokebase
+
+COPY utils/postgresqlContainerFiles/backup.sh utils/postgresqlContainerFiles/startCron.sh ./utils
+RUN chmod +x utils/backup.sh utils/startCron.sh
+
+RUN mkdir backup
 
 RUN python3 ./utils/pokemonScrapper.py
+
 COPY utils/postgresqlContainerFiles/start.sql /docker-entrypoint-initdb.d/
