@@ -279,3 +279,7 @@ class Usuario:
             raise Exception("Erro em Usuario.dropUser: %s"%err)
 
         return 0
+
+    #Retorna o nome do usuário
+    def getNome(self):
+        return self.nome
