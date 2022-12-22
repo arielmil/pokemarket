@@ -1,4 +1,4 @@
-* * * * * root cd /backup && data=$(/bin/date +\%d-\%m-\%Y--\%H:\%M:\%S) && pg_dump -h pokemarket_database -p 5432 -U postgres -w -Fc -f $data-backup.dump
+0 0 * * * root cd /backup && data=$(/bin/date +\%d-\%m-\%Y--\%H:\%M:\%S) && pg_dump -h pokemarket_database -p 5432 -U postgres -w -Fc -f $data-backup.dump
 
 
 
