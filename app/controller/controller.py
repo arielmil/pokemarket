@@ -2,7 +2,13 @@
 from controller import *
 from model.usuario import Usuario
 from model.venda import Venda
+from controller.logger import Logger
 from functools import wraps
+from datetime import datetime
+
+
+#Objeto para Logging
+logger = Logger()
 
 #Configurações de uso com o Flask-Seesion
 sessionUser = None
@@ -27,6 +33,7 @@ def admin_only(f):
     return decorated_function
 
 #Rotas para usuario:
+
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
     global sessionUser
@@ -48,6 +55,9 @@ def login():
                 print("\n\nUsuário logado!\n\n")
             else:
                 print("\n\nErro: Usuário não autenticado.\n\n")
+
+            logger.log("Usuário %s (De id %s) logou no dia %s as %s."%(sessionUser.getNome(), sessionUser.get_id(), 
+            datetime.now().strftime("%d/%m/%Y"), datetime.now().strftime("%H:%M:%S")))
 
             return redirect(url_for('meusPokemons'))
 
@@ -115,6 +125,10 @@ def meusPokemons():
         preco = request.form['preco']
         pokemonId = int(request.form['pokemonId'])
         sessionUser.sell(pokemonId, preco)
+
+        logger.log("Usuário %s (De id: %s) colocou o pokemon de número: %s a venda por: %s₪ na data: %s as: %s."%(sessionUser.getNome(), sessionUser.get_id(), pokemonId, preco,
+        datetime.now().strftime("%d/%m/%Y"), datetime.now().strftime("%H:%M:%S")))
+
         return redirect(url_for('meusPokemons'))
 
     return render_template('meusPokemons.html', pokemonList=pokemonList)
@@ -126,7 +140,13 @@ def feed():
 
     if request.method == 'POST':
 
-        sessionUser.buy(request.form['vendaId'])
+        vendaId = request.form['vendaId']
+        sessionUser.buy(vendaId)
+        
+
+        logger.log("Usuário %s (De id: %s) completou a venda de id: %s na data: %s as: %s."%(sessionUser.getNome(), sessionUser.get_id(), vendaId,
+        datetime.now().strftime("%d/%m/%Y"), datetime.now().strftime("%H:%M:%S")), vendaInfo = True)
+        
         return redirect(url_for('feed'))
 
     return render_template('feed.html', ofertas=ofertas)

@@ -80,3 +80,4 @@ if not exists:
 
             string = '{0},{1},"{{{2}}}","{{{3}}}"\n'
             writer.write(string.format(str(pokemon["number"]), pokemon["name"], tipo, abilidades))
+    writer.close()
