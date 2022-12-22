@@ -17,6 +17,8 @@ services:
     restart: always
     
   cron:
+    environment:
+      PGPASSWORD: 'docker'
     build:
       dockerfile: Dockerfile_cron
     restart: always

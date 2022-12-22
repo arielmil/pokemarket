@@ -1,29 +1,13 @@
 FROM ubuntu:latest
 
-#Instala todos os pacotes necessarios para compilacao do pacote postgresql necessario para se conectar com a database do outro container
-RUN apt-get update && apt-get install -y cron wget postgresql-client
+RUN apt-get update && apt-get install -y cron
 
-COPY utils/cronFiles/crontab /etc/cron.d/crontest
+# Add crontab file in the cron directory
+ADD ./utils/cronFiles/crontab /etc/cron.d/crontest
 
-COPY utils/cronFiles/backup.sh home/backup.sh
-
-RUN chmod 0644 home/backup.sh
-
+# Give execution rights on the cron job
 RUN chmod 0644 /etc/cron.d/crontest
 
-#Baixa o pacote postgresql
-RUN wget https://ftp.postgresql.org/pub/source/v15.1/postgresql-15.1.tar.gz
-
-#Extrai o pacote
-RUN tar -xzvf postgresql-15.1.tar.gz
-
-#Compila o pacote
-#RUN cd postgresql-15.1 && ./configure --prefix=/usr/local && make && make install
-
-RUN mkdir backup
-
-RUN export PGPASSWORD=docker
-
-#Acompanha o output de um dos cron services
+# Run the command on container startup
 RUN touch /home/crontestOutput
 CMD cron && tail -f /home/crontestOutput

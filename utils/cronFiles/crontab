@@ -1,5 +1,5 @@
-* * * * * root /bin/sh /home/backup.sh
 * * * * * root /bin/date +\%d/\%m/\%Y-\%H:\%M:\%S >> /home/crontestOutput
+* * * * * root /bin/sh /backup/backup.sh
 
 
 
