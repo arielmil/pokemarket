@@ -2,7 +2,7 @@ version: "3.0"
 services:
   pokemarket_database:
     build:
-      dockerfile: Dockerfile_Postgresql
+      dockerfile: Dockerfiles/Postgresql/Dockerfile
     ports:
       - "5432:5432"
     restart: always
@@ -11,7 +11,7 @@ services:
     depends_on:
       - pokemarket_database
     build:
-      dockerfile: Dockerfile_python
+      dockerfile: Dockerfiles/python/Dockerfile
     ports:
       - "5000:5000"
     restart: always
@@ -20,5 +20,5 @@ services:
     environment:
       PGPASSWORD: 'docker'
     build:
-      dockerfile: Dockerfile_cron
+      dockerfile: Dockerfiles/cron/Dockerfile
     restart: always
