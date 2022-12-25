@@ -71,20 +71,51 @@ class Venda:
         return 0
 
     #Recebe alguns filtros(a definir), e uma quantidade de itens maxima, e retorna uma lista com as vendas(tuplas) que atendem aos filtros.
-    def listVendas(vendedorId = None):
+    def listVendas(vendedorId = None, tipos = None, abilidades = None, page = 0, itensPerPage = 10):
+        tiposString = ''
+        abilidadesString = ''
+        
+        if (tipos != None):
+
+            sizeTipos = len(tipos)
+            i = 1
+
+            for tipo in tipos:
+
+                if i == sizeTipos:
+                    tiposString = tiposString + tipo
+                else:
+                    tiposString = tiposString + tipo + ','
+
+                i += 1
+        if (abilidades != None):
+
+            sizeAbilidades = len(abilidades)
+            i = 1
+
+            for abilidade in abilidades:
+                    
+                    if i == sizeAbilidades:
+                        abilidadesString = abilidadesString + abilidade
+                    else:
+                        abilidadesString = abilidadesString + abilidade + ','
+    
+                    i += 1
+        
+        #O Operador && é usado para capturar interseções entre valores (A && B retorna TRUE caso A e B se intersectem, e false caso contrário)
         if vendedorId == None:
-            query = """SELECT venda.id, usuario.nome, pokemon_id, pokemon.nome, preco, data_venda
+            query = """SELECT venda.id, usuario.nome, pokemon_id, pokemon.nome, preco, data_venda, pokemon.tipo, abilidades
             FROM pokemarket.venda
             INNER JOIN pokemarket.usuario ON vendedor_id = usuario.id
             INNER JOIN pokemarket.pokemon ON pokemon_id = pokemon.id
-            WHERE finalizada = false"""
+            WHERE finalizada = false and (pokemon.tipo && array[{TIPOS}]) or (abilidades && array[{ABILIDADES}])"""
         
         else:
-            query = """SELECT venda.id, usuario.nome, pokemon_id, pokemon.nome, preco, data_venda
+            query = """SELECT venda.id, usuario.nome, pokemon_id, pokemon.nome, preco, data_venda, pokemon.tipo, abilidades
             FROM pokemarket.venda
             INNER JOIN pokemarket.usuario ON vendedor_id = usuario.id
             INNER JOIN pokemarket.pokemon ON pokemon_id = pokemon.id
-            WHERE finalizada = false AND vendedor_id = {ID}"""
+            WHERE finalizada = false and vendedor_id = {ID} and (pokemon.tipo && array[{TIPOS}]) or (abilidades && array[{ABILIDADES}])"""
             query = query.format(ID = vendedorId)
 
         try:
