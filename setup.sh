@@ -17,7 +17,11 @@ then
 		sudo apt-get update
 		sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 fi
-		
-docker compose build --no-cache
+
+
+if ! command -v docker compose up
+then
+    docker compose build --no-cache
+fi
 
 docker compose up
