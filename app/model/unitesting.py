@@ -1,7 +1,8 @@
-from unittest import *
+import unittest
 from psycopg2 import *
 from pathlib import Path
 from cryptography.fernet import Fernet
+from random import randint
 from usuario import Usuario
 from venda import Venda
 
@@ -15,11 +16,12 @@ with open(pathToKey, 'rb') as file_object:
     for line in file_object:
         encryptionKey = line
 
+encrypter = Fernet(encryptionKey)
 
 #Cria 10 usuarios para fins de testes
 def criaUsuariosTeste():
     global Usuarios
-    cur = conn = connect("host=localhost dbname=pokemarket user=postgres password=docker")
+    conn = connect("host=localhost dbname=pokemarket user=postgres password=docker")
 
 
     #deleta os usuarios dos testes (falhos) anteriores
@@ -53,7 +55,7 @@ def deletaVendasTeste():
         for venda in vendas:
             venda.dropVenda()
 
-class Tester(TestCase):            
+class Tester(unittest.TestCase):            
     #Testes de Banco de Dados:
 
     #Teste de conexão com o Banco de dados
@@ -63,7 +65,7 @@ class Tester(TestCase):
         try:
             conn = connect("host=localhost dbname=pokemarket user=postgres password=docker")
             self.cur = conn.cursor()
-        except psycop2.Error as err:
+        except Error as err:
             print("\n\nErro ao conectar ao banco de dados: %s\n\n"%err.pgerror)
             conn = None
 
@@ -76,9 +78,9 @@ class Tester(TestCase):
         try:
             cur.execute("INSERT INTO pokemarket.usuario (nome, email, senha, tipo, carteira) VALUES ('Teste', 'teste@testando.com', '12345', 'user', '1000')")
             cur.execute("INSERT INTO pokemarket.usuario (nome, email, senha, tipo, carteira) VALUES ('Teste', 'teste@testando.com', '12345', 'user', '1000')")
-            conn.commit()
-        except psycop2.Error as err:
-            conn.rollback()
+            self.conn.commit()
+        except Error as err:
+            self.conn.rollback()
             self.assertEqual(err.pgerror == "duplicate key value violates unique constraint \"usuario_email_key\"", True)
         
     #Testes de Usuário:
@@ -158,12 +160,12 @@ class Tester(TestCase):
     def testRestricaoComprarDeSiMesmo(self):
         print("\n\nTestando restrição de comprar de si mesmo...\n\n")
 
-        mockman1 = Usuario.createUser("Mockman1", "mock@mockman1.com", "1234567")
+        mockman = Usuario.createUser("Mockman1", "mock@mockman1.com", "1234567")
 
-        mockman1.sell(mockman1.listPokemons()[0], 30)
+        mockman.sell(mockman.listPokemons()[0], 30)
 
         try:
-            mockman.buy(Vendas.listVendas(vendedorId = mockman1.getId())[0])
+            mockman.buy(Venda.listVendas(vendedorId = mockman.getId())[0])
         
         except Exception as err:
             self.assertEqual(err.pgerror == 'new row for relation "venda" violates check constraint "check_diff"', True)

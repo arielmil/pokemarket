@@ -2,7 +2,7 @@ from psycopg2 import *
 from random import randint
 from pathlib import Path
 from cryptography.fernet import Fernet
-from model.venda import Venda
+from venda import Venda
 
 #Conecta com a database e gera um cursor para queries
 conn = connect("host=localhost dbname=pokemarket user=postgres password=docker")
