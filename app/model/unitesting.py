@@ -21,13 +21,13 @@ encrypter = Fernet(encryptionKey)
 #Cria 10 usuarios para fins de testes
 def criaUsuariosTeste():
     global Usuarios
-    conn = connect("host=localhost dbname=pokemarket user=postgres password=docker")
+    conn = connect("host=pokemarket_database dbname=pokemarket user=postgres password=docker")
 
 
     #deleta os usuarios dos testes (falhos) anteriores
     try:
         print("\n\nDeletando usuarios teste anteriores...\n\n")
-        conn = connect("host=localhost dbname=pokemarket user=postgres password=docker")
+        conn = connect("host=pokemarket_database dbname=pokemarket user=postgres password=docker")
         conn.cursor().execute("DELETE FROM pokemarket.usuario WHERE email LIKE 'teste%'")
         conn.commit()
     except Error as err:
@@ -63,7 +63,7 @@ class Tester(unittest.TestCase):
         print("\n\nTestando conexão com o Banco de Dados...\n\n")
 
         try:
-            conn = connect("host=localhost dbname=pokemarket user=postgres password=docker")
+            conn = connect("host=pokemarket_database dbname=pokemarket user=postgres password=docker")
             self.cur = conn.cursor()
         except Error as err:
             print("\n\nErro ao conectar ao banco de dados: %s\n\n"%err.pgerror)
